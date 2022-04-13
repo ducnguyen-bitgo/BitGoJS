@@ -403,6 +403,7 @@ describe('TSS Utils:', async function () {
       const nockedCreateTx = await nockCreateTxRequest({
         walletId: wallet.id(),
         requestBody: {
+          apiVersion: 'light',
           intent: {
             intentType: 'payment',
             recipients: [{
@@ -436,6 +437,7 @@ describe('TSS Utils:', async function () {
       const nockedCreateTx = await nockCreateTxRequest({
         walletId: wallet.id(),
         requestBody: {
+          apiVersion: 'light',
           intent: {
             intentType: 'payment',
             recipients: [{
@@ -793,16 +795,15 @@ describe('TSS Utils:', async function () {
 
   async function nockGetTxRequest(params: {walletId: string, txRequestId: string, response: any}): Promise<nock.Scope> {
     return nock('https://bitgo.fakeurl')
-      .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
+      .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true&apiVersion=light`)
       .reply(200, params.response);
   }
 
   async function nockSendSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: any, signerShare?: string}, status = 200): Promise<nock.Scope> {
     const { signatureShare, signerShare } = params;
     const requestBody = signerShare === undefined ?
-      { signatureShare } :
-      { signatureShare, signerShare };
-
+      { signatureShare, apiVersion: 'light' } :
+      { signatureShare, signerShare, apiVersion: 'light' };
     return nock('https://bitgo.fakeurl')
       .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`, requestBody)
       .reply(status, (status === 200 ? params.signatureShare : { error: 'some error' }));
